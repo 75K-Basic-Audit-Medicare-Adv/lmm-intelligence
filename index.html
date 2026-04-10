@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wall Street LMM Intelligence</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@stripe/stripe-js@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Serif+Pro:wght@400;600&display=swap');
+
+    body {
+      font-family: 'Source Serif Pro', serif;
+      background: #0a0e27;
+      color: #e8e6e1;
+      line-height: 1.6;
+    }
+
+    :root {
+      --gold: #d4af37;
+      --dark: #0a0e27;
+      --card-bg: #12172f;
+      --border: #2a3150;
+      --text-light: #e8e6e1;
+      --text-muted: #a8a59e;
+      --accent: #c9a961;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 2rem;
+      margin-bottom: 3rem;
+      position: relative;
+    }
+
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      color: var(--gold);
+      letter-spacing: 2px;
+    }
+
+    .logo small {
+      display: block;
+      font-family: 'Source Serif Pro', serif;
+      font-size: 0.6rem;
+      letter-spacing: 3px;
+      color: var(--text-muted);
+      margin-top: 0.3rem;
+      text-transform: uppercase;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+    }
+
+    .user-badge {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    button {
+      background: var(--gold);
+      color: #000;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      font-family: 'Source Serif Pro', serif;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+      letter-spacing: 0.5px;
+    }
+
+    button:hover {
+      background: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    button.secondary {
+      background: transparent;
+      color: var(--gold);
+      border: 1px solid var(--gold);
+    }
+
+    button.secondary:hover {
+      background: rgba(212, 175, 55, 0.1);
+    }
+
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .project-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 2rem;
+      border-radius: 4px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .project-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--gold) 0%, transparent 100%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .project-card:hover {
+      border-color: var(--gold);
+      transform: translateY(-4px);
+    }
+
+    .project-card:hover::before {
+      opacity: 1;
+    }
+
+    .project-id {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      color: var(--gold);
+      margin-bottom: 0.5rem;
+      letter-spacing: 1px;
+    }
+
+    .project-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 1.5rem 0;
+      padding: 1.5rem 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .meta-label {
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-size: 0.7rem;
+      letter-spacing: 1px;
+      margin-bottom: 0.4rem;
+    }
+
+    .meta-value {
+      color: var(--text-light);
+      font-weight: 600;
+    }
+
+    .description {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin: 1.5rem 0;
+      flex-grow: 1;
+      line-height: 1.7;
+    }
+
+    .file-status {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .file-badge {
+      flex: 1;
+      background: rgba(212, 175, 55, 0.1);
+      border: 1px solid var(--gold);
+      padding: 0.75rem 1rem;
+      border-radius: 4px;
+      text-align: center;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--gold);
+    }
+
+    .file-badge.unavailable {
+      background: rgba(168, 165, 158, 0.05);
+      border-color: var(--text-muted);
+      color: var(--text-muted);
+    }
+
+    .actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+      flex-direction: column;
+    }
+
+    .actions button {
+      width: 100%;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(10, 14, 39, 0.9);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 2rem;
+      border-radius: 4px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .modal-header {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      color: var(--gold);
+      margin-bottom: 1.5rem;
+      letter-spacing: 1px;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      width: 2rem;
+      height: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .close-btn:hover {
+      color: var(--gold);
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--text-light);
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 0.75rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--text-light);
+      border-radius: 4px;
+      font-family: 'Source Serif Pro', serif;
+      font-size: 0.95rem;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: var(--gold);
+      background: rgba(212, 175, 55, 0.05);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .form-actions button {
+      flex: 1;
+    }
+
+    .success-message {
+      background: rgba(212, 175, 55, 0.1);
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      padding: 1rem;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+
+    .error-message {
+      background: rgba(200, 100, 100, 0.1);
+      border: 1px solid #c86464;
+      color: #f5a5a5;
+      padding: 1rem;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+
+    .admin-nav {
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1rem;
+      display: flex;
+      gap: 2rem;
+    }
+
+    .admin-nav button {
+      background: transparent;
+      color: var(--text-muted);
+      border: none;
+      padding: 0.5rem 0;
+      font-size: 0.95rem;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      padding-bottom: 0.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .admin-nav button.active {
+      color: var(--gold);
+      border-bottom-color: var(--gold);
+    }
+
+    .admin-nav button:hover {
+      color: var(--gold);
+    }
+
+    .file-list {
+      margin-top: 1.5rem;
+    }
+
+    .file-item {
+      background: rgba(212, 175, 55, 0.05);
+      border: 1px solid var(--border);
+      padding: 1rem;
+      border-radius: 4px;
+      margin-bottom: 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .file-item-info {
+      flex: 1;
+    }
+
+    .file-item-name {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .file-item-meta {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .payment-info {
+      background: rgba(212, 175, 55, 0.1);
+      border: 1px solid var(--gold);
+      padding: 1.5rem;
+      border-radius: 4px;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .payment-amount {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      color: var(--gold);
+      margin: 1rem 0;
+    }
+
+    .stripe-payment-form {
+      margin: 1.5rem 0;
+    }
+
+    #card-element {
+      padding: 0.75rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text-light);
+    }
+
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    @media (max-width: 768px) {
+      .projects-grid {
+        grid-template-columns: 1fr;
+      }
+
+      header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+      }
+
+      .header-actions {
+        width: 100%;
+        flex-direction: column;
+      }
+
+      .project-meta {
+        grid-template-columns: 1fr;
+      }
+
+      .file-status {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // Initialize Supabase
+    const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+    const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const STRIPE_PUBLISHABLE_KEY = 'pk_test_YOUR_KEY_HERE';
+    let stripe;
+
+    const projects = [
+      { id: 'vulcan', name: 'Project Vulcan', sector: 'Precision Mfg', revenue: '$68M', capital: '$15M', liquidity: 'Verified gap in contract scaling and raw material cost volatility.' },
+      { id: 'torque', name: 'Project Torque', sector: 'EComm/Parts', revenue: '$65M', capital: '$15M', liquidity: 'Inventory lifecycle mismatch; primary transition to EV performance hardware.' },
+      { id: 'granite', name: 'Project Granite', sector: 'Construction', revenue: '$58M', capital: '$14M', liquidity: 'Operational bridge required for equipment lease obligations and cash flow gap.' },
+      { id: 'atlas', name: 'Project Atlas', sector: 'Industrial Tech', revenue: '$42M', capital: '$12M', liquidity: 'Confirmed revenue contraction requiring a strategic operational pivot.' }
+    ];
+
+    function App() {
+      const [user, setUser] = useState(null);
+      const [authMode, setAuthMode] = useState('login'); // login or signup
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [loading, setLoading] = useState(false);
+      const [message, setMessage] = useState('');
+      const [isAdmin, setIsAdmin] = useState(false);
+      const [showAuthModal, setShowAuthModal] = useState(false);
+      const [showPaymentModal, setShowPaymentModal] = useState(false);
+      const [selectedProject, setSelectedProject] = useState(null);
+      const [purchases, setPurchases] = useState({});
+      const [files, setFiles] = useState({});
+      const [adminTab, setAdminTab] = useState('upload');
+      const [countdowns, setCountdowns] = useState({});
+
+      useEffect(() => {
+        loadStripe();
+        checkAuth();
+      }, []);
+
+      // Timer for download expiration
+      useEffect(() => {
+        const interval = setInterval(() => {
+          const newCountdowns = {};
+          Object.entries(purchases).forEach(([projectId, purchase]) => {
+            if (purchase && typeof purchase === 'object' && purchase.expiresAt) {
+              const now = Date.now();
+              const timeLeft = purchase.expiresAt - now;
+              
+              if (timeLeft > 0) {
+                const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                newCountdowns[projectId] = `${hours}h ${minutes}m ${seconds}s`;
+              } else {
+                newCountdowns[projectId] = 'expired';
+              }
+            }
+          });
+          setCountdowns(newCountdowns);
+        }, 1000);
+
+        return () => clearInterval(interval);
+      }, [purchases]);
+
+      async function loadStripe() {
+        stripe = await window.Stripe(STRIPE_PUBLISHABLE_KEY);
+      }
+
+      async function checkAuth() {
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          setUser(data.session.user);
+          loadPurchases(data.session.user.email);
+        }
+      }
+
+      async function loadPurchases(userEmail) {
+        const { data } = await supabase
+          .from('purchases')
+          .select('*')
+          .eq('status', 'completed');
+        
+        const purchaseMap = {};
+        const now = Date.now();
+        data?.forEach(p => {
+          const expiresAt = new Date(p.download_expires_at).getTime();
+          if (expiresAt > now) {
+            purchaseMap[p.project_id] = {
+              purchased: true,
+              expiresAt: expiresAt
+            };
+          }
+        });
+        setPurchases(purchaseMap);
+      }
+
+      async function loadFiles() {
+        const { data } = await supabase.storage.from('teasers').list();
+        const fileMap = {};
+        data?.forEach(f => {
+          const project = f.name.split('-')[0];
+          fileMap[project] = f.name;
+        });
+        setFiles(fileMap);
+      }
+
+      async function handleAuth(e) {
+        e.preventDefault();
+        setLoading(true);
+        setMessage('');
+
+        try {
+          if (authMode === 'signup') {
+            const { error } = await supabase.auth.signUp({ email, password });
+            if (error) throw error;
+            setMessage('Check your email to confirm signup!');
+            setAuthMode('login');
+          } else {
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) throw error;
+            setUser(data.user);
+            setShowAuthModal(false);
+            loadPurchases(email);
+          }
+        } catch (err) {
+          setMessage('Error: ' + err.message);
+        }
+        setLoading(false);
+      }
+
+      async function handleLogout() {
+        await supabase.auth.signOut();
+        setUser(null);
+        setPurchases({});
+      }
+
+      function openPaymentModal(project) {
+        if (!user) {
+          setShowAuthModal(true);
+          return;
+        }
+        setSelectedProject(project);
+        setShowPaymentModal(true);
+        setTimeout(() => {
+          // Stripe elements would mount here
+        }, 100);
+      }
+
+      async function handlePayment(e) {
+        e.preventDefault();
+        setLoading(true);
+
+        try {
+          // Create payment intent
+          const response = await fetch('/api/create-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: user.email,
+              projectId: selectedProject.id
+            })
+          });
+
+          const { clientSecret } = await response.json();
+
+          // Confirm payment (in test mode, use test card)
+          const result = await stripe.confirmCardPayment(clientSecret, {
+            payment_method: {
+              card: {
+                token: 'tok_visa' // Stripe test token
+              }
+            }
+          });
+
+          if (result.paymentIntent.status === 'succeeded') {
+            // Confirm with backend
+            await fetch('/api/confirm-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ paymentIntentId: result.paymentIntent.id })
+            });
+
+            // Add 12 hours to current time for expiration
+            const expirationTime = new Date(Date.now() + 12 * 60 * 60 * 1000);
+            
+            setPurchases({ 
+              ...purchases, 
+              [selectedProject.id]: {
+                purchased: true,
+                expiresAt: expirationTime.getTime()
+              }
+            });
+            setShowPaymentModal(false);
+            setMessage('Payment successful! Download available for 12 hours.');
+          }
+        } catch (err) {
+          setMessage('Payment error: ' + err.message);
+        }
+        setLoading(false);
+      }
+
+      if (!user) {
+        return (
+          <>
+            <div className="container">
+              <header>
+                <div>
+                  <div className="logo">
+                    LMM INTELLIGENCE
+                    <small>Wall Street Research</small>
+                  </div>
+                </div>
+                <button onClick={() => setShowAuthModal(true)}>Sign In</button>
+              </header>
+
+              <div style={{ marginTop: '4rem', textAlign: 'center' }}>
+                <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', fontFamily: "'Playfair Display', serif" }}>Investment Intelligence Platform</h1>
+                <p style={{ fontSize: '1.1rem', color: 'var(--text-muted)', marginBottom: '2rem' }}>Access exclusive research on high-potential acquisition targets</p>
+              </div>
+
+              <div className="projects-grid">
+                {projects.map(proj => (
+                  <div key={proj.id} className="project-card">
+                    <div className="project-id">{proj.name}</div>
+                    <div className="project-meta">
+                      <div className="meta-item">
+                        <div className="meta-label">Sector</div>
+                        <div className="meta-value">{proj.sector}</div>
+                      </div>
+                      <div className="meta-item">
+                        <div className="meta-label">Revenue</div>
+                        <div className="meta-value">{proj.revenue}</div>
+                      </div>
+                    </div>
+                    <div className="description">{proj.liquidity}</div>
+                    <div className="file-status">
+                      <div className="file-badge">Teaser Available</div>
+                      <div className="file-badge unavailable">Full Report Locked</div>
+                    </div>
+                    <div className="actions">
+                      <button onClick={() => setShowAuthModal(true)}>Sign In to View</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className={`modal ${showAuthModal ? 'active' : ''}`}>
+              <div className="modal-content">
+                <button className="close-btn" onClick={() => setShowAuthModal(false)}>×</button>
+                <div className="modal-header">{authMode === 'login' ? 'Sign In' : 'Create Account'}</div>
+                {message && (message.includes('Error') ? <div className="error-message">{message}</div> : <div className="success-message">{message}</div>)}
+                <form onSubmit={handleAuth}>
+                  <div className="form-group">
+                    <label>Email</label>
+                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+                  </div>
+                  <div className="form-group">
+                    <label>Password</label>
+                    <input type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+                  </div>
+                  <div className="form-actions">
+                    <button type="submit" disabled={loading}>{loading ? 'Loading...' : (authMode === 'login' ? 'Sign In' : 'Sign Up')}</button>
+                  </div>
+                </form>
+                <p style={{ marginTop: '1rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                  {authMode === 'login' ? "Don't have an account? " : 'Already have an account? '}
+                  <button style={{ background: 'none', color: 'var(--gold)', border: 'none', cursor: 'pointer', padding: 0 }} onClick={() => { setAuthMode(authMode === 'login' ? 'signup' : 'login'); setMessage(''); }}>
+                    {authMode === 'login' ? 'Sign Up' : 'Sign In'}
+                  </button>
+                </p>
+              </div>
+            </div>
+          </>
+        );
+      }
+
+      if (isAdmin) {
+        return <AdminPanel user={user} onExit={() => setIsAdmin(false)} onLogout={handleLogout} />;
+      }
+
+      return (
+        <>
+          <div className="container">
+            <header>
+              <div>
+                <div className="logo">
+                  LMM INTELLIGENCE
+                  <small>Wall Street Research</small>
+                </div>
+              </div>
+              <div className="header-actions">
+                <div className="user-badge">{user.email}</div>
+                {user.email === 'admin@lmmintelligence.com' && <button onClick={() => setIsAdmin(true)}>Admin Panel</button>}
+                <button className="secondary" onClick={handleLogout}>Sign Out</button>
+              </div>
+            </header>
+
+            <div className="projects-grid">
+              {projects.map(proj => (
+                <div key={proj.id} className="project-card">
+                  <div className="project-id">{proj.name}</div>
+                  <div className="project-meta">
+                    <div className="meta-item">
+                      <div className="meta-label">Sector</div>
+                      <div className="meta-value">{proj.sector}</div>
+                    </div>
+                    <div className="meta-item">
+                      <div className="meta-label">Revenue</div>
+                      <div className="meta-value">{proj.revenue}</div>
+                    </div>
+                    <div className="meta-item">
+                      <div className="meta-label">Capital Need</div>
+                      <div className="meta-value">{proj.capital}</div>
+                    </div>
+                    <div className="meta-item">
+                      <div className="meta-label">Liquidity Trigger</div>
+                      <div className="meta-value">{proj.liquidity}</div>
+                    </div>
+                  </div>
+                  <div className="file-status">
+                    <div className="file-badge">Teaser Available</div>
+                    {purchases[proj.id] ? (
+                      countdowns[proj.id] === 'expired' ? (
+                        <div className="file-badge unavailable">Download Expired</div>
+                      ) : (
+                        <div className="file-badge" style={{ background: 'rgba(76, 175, 80, 0.1)', borderColor: '#4caf50', color: '#4caf50' }}>
+                          {countdowns[proj.id] || 'Loading...'}
+                        </div>
+                      )
+                    ) : (
+                      <div className="file-badge unavailable">Full Report - $2,000</div>
+                    )}
+                  </div>
+                  <div className="actions">
+                    <button onClick={() => window.open(`/teaser-${proj.id}.pdf`)}>View Teaser</button>
+                    {purchases[proj.id] ? (
+                      countdowns[proj.id] === 'expired' ? (
+                        <div style={{ background: 'rgba(200, 100, 100, 0.1)', border: '1px solid #c86464', color: '#f5a5a5', padding: '0.75rem', borderRadius: '4px', textAlign: 'center', fontSize: '0.9rem' }}>
+                          Download window expired after 12 hours. <br/><a href="mailto:admin@lmmintelligence.com" style={{ color: 'inherit', textDecoration: 'underline' }}>Email admin for help</a>
+                        </div>
+                      ) : (
+                        <button onClick={() => window.open(`/full-report-${proj.id}.pdf`)}>Download Full Report</button>
+                      )
+                    ) : (
+                      <button onClick={() => openPaymentModal(proj)}>Purchase Full Report - $2,000</button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className={`modal ${showPaymentModal ? 'active' : ''}`}>
+            <div className="modal-content">
+              <button className="close-btn" onClick={() => setShowPaymentModal(false)}>×</button>
+              <div className="modal-header">Purchase {selectedProject?.name}</div>
+              {message && (message.includes('Error') ? <div className="error-message">{message}</div> : <div className="success-message">{message}</div>)}
+              <div className="payment-info">
+                <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Full Report Access</div>
+                <div className="payment-amount">$2,000.00</div>
+                <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>One-time purchase • Unlimited downloads</div>
+              </div>
+              <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>Use test card: 4242 4242 4242 4242 (any future date, any CVC)</p>
+              <form onSubmit={handlePayment}>
+                <div className="form-group">
+                  <label>Email</label>
+                  <input type="email" value={user.email} disabled />
+                </div>
+                <div className="form-actions">
+                  <button type="submit" disabled={loading}>{loading ? 'Processing...' : 'Pay $2,000'}</button>
+                  <button type="button" className="secondary" onClick={() => setShowPaymentModal(false)}>Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </>
+      );
+    }
+
+    function AdminPanel({ user, onExit, onLogout }) {
+      const [activeTab, setActiveTab] = useState('upload');
+      const [projects, setProjects] = useState([
+        { id: 'vulcan', name: 'Project Vulcan' },
+        { id: 'torque', name: 'Project Torque' },
+        { id: 'granite', name: 'Project Granite' },
+        { id: 'atlas', name: 'Project Atlas' }
+      ]);
+      const [selectedProject, setSelectedProject] = useState('vulcan');
+      const [teaserFile, setTeaserFile] = useState(null);
+      const [fullReportFile, setFullReportFile] = useState(null);
+      const [message, setMessage] = useState('');
+      const [loading, setLoading] = useState(false);
+
+      async function handleUpload(fileType) {
+        if (fileType === 'teaser' && !teaserFile) {
+          setMessage('Please select a teaser file');
+          return;
+        }
+        if (fileType === 'full' && !fullReportFile) {
+          setMessage('Please select a full report file');
+          return;
+        }
+
+        setLoading(true);
+        try {
+          const file = fileType === 'teaser' ? teaserFile : fullReportFile;
+          const bucket = fileType === 'teaser' ? 'teasers' : 'full-reports';
+          const fileName = `${selectedProject}-${fileType}.pdf`;
+
+          const { error } = await supabase.storage
+            .from(bucket)
+            .upload(fileName, file, { upsert: true });
+
+          if (error) throw error;
+          setMessage(`${fileType === 'teaser' ? 'Teaser' : 'Full report'} uploaded successfully!`);
+          if (fileType === 'teaser') setTeaserFile(null);
+          else setFullReportFile(null);
+        } catch (err) {
+          setMessage('Error: ' + err.message);
+        }
+        setLoading(false);
+      }
+
+      return (
+        <>
+          <div className="container">
+            <header>
+              <div>
+                <div className="logo">
+                  LMM INTELLIGENCE
+                  <small>Admin Panel</small>
+                </div>
+              </div>
+              <div className="header-actions">
+                <button className="secondary" onClick={onExit}>Back to Dashboard</button>
+                <button className="secondary" onClick={onLogout}>Sign Out</button>
+              </div>
+            </header>
+
+            <div className="admin-nav">
+              <button className={activeTab === 'upload' ? 'active' : ''} onClick={() => setActiveTab('upload')}>Upload Files</button>
+              <button className={activeTab === 'manage' ? 'active' : ''} onClick={() => setActiveTab('manage')}>Manage Files</button>
+            </div>
+
+            {message && (message.includes('Error') ? <div className="error-message">{message}</div> : <div className="success-message">{message}</div>)}
+
+            {activeTab === 'upload' && (
+              <div style={{ maxWidth: '600px' }}>
+                <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', color: 'var(--gold)', fontFamily: "'Playfair Display', serif" }}>Upload Project Files</h2>
+                
+                <div className="form-group">
+                  <label>Select Project</label>
+                  <select value={selectedProject} onChange={e => setSelectedProject(e.target.value)}>
+                    {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  </select>
+                </div>
+
+                <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', padding: '2rem', borderRadius: '4px', marginBottom: '2rem' }}>
+                  <h3 style={{ color: 'var(--text-light)', marginBottom: '1rem' }}>Teaser PDF</h3>
+                  <input type="file" accept=".pdf" onChange={e => setTeaserFile(e.target.files[0])} />
+                  {teaserFile && <p style={{ marginTop: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>✓ {teaserFile.name}</p>}
+                  <button onClick={() => handleUpload('teaser')} disabled={loading} style={{ marginTop: '1rem', width: '100%' }}>{loading ? 'Uploading...' : 'Upload Teaser'}</button>
+                </div>
+
+                <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', padding: '2rem', borderRadius: '4px' }}>
+                  <h3 style={{ color: 'var(--text-light)', marginBottom: '1rem' }}>Full Report PDF</h3>
+                  <input type="file" accept=".pdf" onChange={e => setFullReportFile(e.target.files[0])} />
+                  {fullReportFile && <p style={{ marginTop: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>✓ {fullReportFile.name}</p>}
+                  <button onClick={() => handleUpload('full')} disabled={loading} style={{ marginTop: '1rem', width: '100%' }}>{loading ? 'Uploading...' : 'Upload Full Report'}</button>
+                </div>
+              </div>
+            )}
+          </div>
+        </>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>

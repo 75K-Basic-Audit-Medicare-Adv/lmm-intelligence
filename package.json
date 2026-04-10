@@ -1,0 +1,11 @@
+{
+  "name": "lmm-intelligence",
+  "version": "1.0.0",
+  "description": "Wall Street LMM Intelligence - Research membership platform",
+  "main": "index.js",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "stripe": "^14.0.0"
+  },
+  "devDependencies": {}
+}
