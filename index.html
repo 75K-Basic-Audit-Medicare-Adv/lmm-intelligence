@@ -3,966 +3,400 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wall Street LMM Intelligence</title>
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@stripe/stripe-js@latest"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
+  <title>Wall Street Intelligence Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Serif+Pro:wght@400;600&display=swap');
-
-    body {
-      font-family: 'Source Serif Pro', serif;
-      background: #0a0e27;
-      color: #e8e6e1;
-      line-height: 1.6;
-    }
-
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
-      --gold: #d4af37;
-      --dark: #0a0e27;
-      --card-bg: #12172f;
-      --border: #2a3150;
-      --text-light: #e8e6e1;
-      --text-muted: #a8a59e;
-      --accent: #c9a961;
+      --bg: #080c10; --bg2: #0d1117; --bg3: #161b22;
+      --border: #21262d; --border2: #30363d;
+      --gold: #e3b341; --gold2: #f0c850;
+      --green: #3fb950; --red: #f85149; --blue: #58a6ff;
+      --text: #e6edf3; --text2: #8b949e; --text3: #484f58;
     }
+    body { font-family: 'IBM Plex Mono', monospace; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 13px; }
 
-    body {
-      background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
-      min-height: 100vh;
-    }
 
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 2rem;
-    }
 
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 2rem;
-      margin-bottom: 3rem;
-      position: relative;
-    }
+    .main-header { background: var(--bg2); border-bottom: 2px solid var(--gold); padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .header-left { display: flex; flex-direction: column; gap: 8px; }
+    .header-title { font-size: 13px; font-weight: 700; letter-spacing: 0.5px; line-height: 1.5; }
+    .header-title span { color: var(--gold); }
+    .header-stats { display: flex; gap: 10px; flex-wrap: wrap; }
+    .stat-pill { background: var(--bg3); border: 1px solid var(--border2); padding: 5px 12px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
+    .stat-gold { border-color: var(--gold) !important; color: var(--gold); }
+    .stat-green { border-color: var(--green) !important; color: var(--green); }
+    .header-actions { display: flex; gap: 8px; }
 
-    .logo {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.8rem;
-      color: var(--gold);
-      letter-spacing: 2px;
-    }
+    .btn { font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 700; padding: 6px 14px; border: 1px solid var(--border2); cursor: pointer; letter-spacing: 0.5px; transition: all 0.15s; background: transparent; color: var(--text2); }
+    .btn:hover { border-color: var(--gold); color: var(--gold); }
+    .btn-gold { background: var(--gold) !important; color: #000 !important; border-color: var(--gold) !important; }
+    .btn-gold:hover { background: var(--gold2) !important; }
+    .btn-green { border-color: var(--green) !important; color: var(--green) !important; }
+    .btn-green:hover { background: rgba(63,185,80,0.1) !important; }
+    .btn-red { border-color: var(--red) !important; color: var(--red) !important; }
 
-    .logo small {
-      display: block;
-      font-family: 'Source Serif Pro', serif;
-      font-size: 0.6rem;
-      letter-spacing: 3px;
-      color: var(--text-muted);
-      margin-top: 0.3rem;
-      text-transform: uppercase;
-    }
+    .syndicate-bar { background: rgba(227,179,65,0.08); border-bottom: 1px solid rgba(227,179,65,0.3); padding: 7px 24px; font-size: 11px; color: var(--gold); letter-spacing: 0.3px; }
 
-    .header-actions {
-      display: flex;
-      gap: 1.5rem;
-      align-items: center;
-    }
+    .filter-bar { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 10px 24px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .filter-label { color: var(--text2); font-size: 10px; font-weight: 700; letter-spacing: 1px; }
+    select.flt, input.flt { font-family: 'IBM Plex Mono', monospace; font-size: 12px; background: var(--bg3); border: 1px solid var(--border2); color: var(--text); padding: 5px 10px; cursor: pointer; outline: none; }
+    select.flt:focus, input.flt:focus { border-color: var(--gold); }
+    input.flt { width: 180px; }
+    input.flt::placeholder { color: var(--text3); }
 
-    .user-badge {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      padding: 0.75rem 1.5rem;
-      border-radius: 4px;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { background: var(--bg3); border-bottom: 2px solid var(--border2); }
+    th { padding: 10px 14px; text-align: left; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; color: var(--text2); text-transform: uppercase; white-space: nowrap; cursor: pointer; user-select: none; }
+    th:hover { color: var(--gold); }
+    tbody tr { border-bottom: 1px solid var(--border); }
+    tbody tr:hover { background: rgba(255,255,255,0.02); }
+    tbody tr.funded { opacity: 0.4; }
+    td { padding: 9px 14px; vertical-align: middle; white-space: nowrap; }
 
-    button {
-      background: var(--gold);
-      color: #000;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 4px;
-      font-family: 'Source Serif Pro', serif;
-      font-weight: 600;
-      cursor: pointer;
-      font-size: 0.95rem;
-      transition: all 0.3s ease;
-      letter-spacing: 0.5px;
-    }
+    .deal-id { color: var(--blue); font-weight: 700; font-size: 12px; }
+    .sector-badge { background: var(--bg3); border: 1px solid var(--border2); padding: 2px 7px; font-size: 10px; font-weight: 600; }
+    .region-cell { color: var(--text2); font-size: 12px; }
+    .facility-cell { color: var(--gold); font-weight: 700; }
+    .yield-cell { color: var(--green); font-weight: 700; }
+    .funded-badge { background: rgba(248,81,73,0.1); border: 1px solid var(--red); color: var(--red); padding: 2px 8px; font-size: 10px; font-weight: 700; letter-spacing: 1px; }
+    .active-badge { color: var(--green); font-size: 10px; font-weight: 700; letter-spacing: 1px; }
+    .empty-msg { text-align: center; padding: 50px; color: var(--text3); }
 
-    button:hover {
-      background: var(--accent);
-      transform: translateY(-1px);
-    }
-
-    button.secondary {
-      background: transparent;
-      color: var(--gold);
-      border: 1px solid var(--gold);
-    }
-
-    button.secondary:hover {
-      background: rgba(212, 175, 55, 0.1);
-    }
-
-    .projects-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 2rem;
-      margin-bottom: 3rem;
-    }
-
-    .project-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      padding: 2rem;
-      border-radius: 4px;
-      position: relative;
-      overflow: hidden;
-      transition: all 0.3s ease;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .project-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, var(--gold) 0%, transparent 100%);
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
-    .project-card:hover {
-      border-color: var(--gold);
-      transform: translateY(-4px);
-    }
-
-    .project-card:hover::before {
-      opacity: 1;
-    }
-
-    .project-id {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.3rem;
-      color: var(--gold);
-      margin-bottom: 0.5rem;
-      letter-spacing: 1px;
-    }
-
-    .project-meta {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      margin: 1.5rem 0;
-      padding: 1.5rem 0;
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      font-size: 0.85rem;
-    }
-
-    .meta-item {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .meta-label {
-      color: var(--text-muted);
-      text-transform: uppercase;
-      font-size: 0.7rem;
-      letter-spacing: 1px;
-      margin-bottom: 0.4rem;
-    }
-
-    .meta-value {
-      color: var(--text-light);
-      font-weight: 600;
-    }
-
-    .description {
-      color: var(--text-muted);
-      font-size: 0.95rem;
-      margin: 1.5rem 0;
-      flex-grow: 1;
-      line-height: 1.7;
-    }
-
-    .file-status {
-      display: flex;
-      gap: 1rem;
-      margin-top: 1.5rem;
-      padding-top: 1.5rem;
-      border-top: 1px solid var(--border);
-    }
-
-    .file-badge {
-      flex: 1;
-      background: rgba(212, 175, 55, 0.1);
-      border: 1px solid var(--gold);
-      padding: 0.75rem 1rem;
-      border-radius: 4px;
-      text-align: center;
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--gold);
-    }
-
-    .file-badge.unavailable {
-      background: rgba(168, 165, 158, 0.05);
-      border-color: var(--text-muted);
-      color: var(--text-muted);
-    }
-
-    .actions {
-      display: flex;
-      gap: 0.75rem;
-      margin-top: 1.5rem;
-      flex-direction: column;
-    }
-
-    .actions button {
-      width: 100%;
-    }
-
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(10, 14, 39, 0.9);
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .modal.active {
-      display: flex;
-    }
-
-    .modal-content {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      padding: 2rem;
-      border-radius: 4px;
-      max-width: 500px;
-      width: 90%;
-      max-height: 90vh;
-      overflow-y: auto;
-      position: relative;
-    }
-
-    .modal-header {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.5rem;
-      color: var(--gold);
-      margin-bottom: 1.5rem;
-      letter-spacing: 1px;
-    }
-
-    .close-btn {
-      position: absolute;
-      top: 1.5rem;
-      right: 1.5rem;
-      background: transparent;
-      color: var(--text-muted);
-      font-size: 1.5rem;
-      border: none;
-      cursor: pointer;
-      padding: 0;
-      width: 2rem;
-      height: 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .close-btn:hover {
-      color: var(--gold);
-    }
-
-    .form-group {
-      margin-bottom: 1.5rem;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 0.5rem;
-      color: var(--text-light);
-      font-weight: 600;
-      font-size: 0.9rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    input, textarea, select {
-      width: 100%;
-      padding: 0.75rem;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border);
-      color: var(--text-light);
-      border-radius: 4px;
-      font-family: 'Source Serif Pro', serif;
-      font-size: 0.95rem;
-    }
-
-    input:focus, textarea:focus, select:focus {
-      outline: none;
-      border-color: var(--gold);
-      background: rgba(212, 175, 55, 0.05);
-    }
-
-    textarea {
-      resize: vertical;
-      min-height: 100px;
-    }
-
-    .form-actions {
-      display: flex;
-      gap: 1rem;
-      margin-top: 2rem;
-    }
-
-    .form-actions button {
-      flex: 1;
-    }
-
-    .success-message {
-      background: rgba(212, 175, 55, 0.1);
-      border: 1px solid var(--gold);
-      color: var(--gold);
-      padding: 1rem;
-      border-radius: 4px;
-      margin-bottom: 1rem;
-      font-size: 0.9rem;
-    }
-
-    .error-message {
-      background: rgba(200, 100, 100, 0.1);
-      border: 1px solid #c86464;
-      color: #f5a5a5;
-      padding: 1rem;
-      border-radius: 4px;
-      margin-bottom: 1rem;
-      font-size: 0.9rem;
-    }
-
-    .admin-nav {
-      margin-bottom: 2rem;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 1rem;
-      display: flex;
-      gap: 2rem;
-    }
-
-    .admin-nav button {
-      background: transparent;
-      color: var(--text-muted);
-      border: none;
-      padding: 0.5rem 0;
-      font-size: 0.95rem;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      padding-bottom: 0.5rem;
-      transition: all 0.3s ease;
-    }
-
-    .admin-nav button.active {
-      color: var(--gold);
-      border-bottom-color: var(--gold);
-    }
-
-    .admin-nav button:hover {
-      color: var(--gold);
-    }
-
-    .file-list {
-      margin-top: 1.5rem;
-    }
-
-    .file-item {
-      background: rgba(212, 175, 55, 0.05);
-      border: 1px solid var(--border);
-      padding: 1rem;
-      border-radius: 4px;
-      margin-bottom: 0.75rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .file-item-info {
-      flex: 1;
-    }
-
-    .file-item-name {
-      font-weight: 600;
-      margin-bottom: 0.25rem;
-    }
-
-    .file-item-meta {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
-
-    .payment-info {
-      background: rgba(212, 175, 55, 0.1);
-      border: 1px solid var(--gold);
-      padding: 1.5rem;
-      border-radius: 4px;
-      margin-bottom: 1.5rem;
-      text-align: center;
-    }
-
-    .payment-amount {
-      font-family: 'Playfair Display', serif;
-      font-size: 2rem;
-      color: var(--gold);
-      margin: 1rem 0;
-    }
-
-    .stripe-payment-form {
-      margin: 1.5rem 0;
-    }
-
-    #card-element {
-      padding: 0.75rem;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      color: var(--text-light);
-    }
-
-    .loading {
-      opacity: 0.6;
-      pointer-events: none;
-    }
-
-    @media (max-width: 768px) {
-      .projects-grid {
-        grid-template-columns: 1fr;
-      }
-
-      header {
-        flex-direction: column;
-        gap: 1rem;
-        align-items: flex-start;
-      }
-
-      .header-actions {
-        width: 100%;
-        flex-direction: column;
-      }
-
-      .project-meta {
-        grid-template-columns: 1fr;
-      }
-
-      .file-status {
-        flex-direction: column;
-      }
-    }
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center; }
+    .overlay.open { display: flex; }
+    .modal { background: var(--bg2); border: 1px solid var(--border2); border-top: 2px solid var(--gold); padding: 28px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; position: relative; }
+    .modal-title { font-size: 13px; font-weight: 700; color: var(--gold); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 20px; }
+    .modal-close { position: absolute; top: 14px; right: 16px; background: none; border: none; color: var(--text2); font-size: 20px; cursor: pointer; font-family: inherit; }
+    .modal-close:hover { color: var(--text); }
+    .frow { margin-bottom: 14px; }
+    .flabel { display: block; font-size: 10px; font-weight: 700; letter-spacing: 1px; color: var(--text2); text-transform: uppercase; margin-bottom: 5px; }
+    .finput, .fselect { width: 100%; font-family: 'IBM Plex Mono', monospace; font-size: 12px; background: var(--bg3); border: 1px solid var(--border2); color: var(--text); padding: 8px 10px; outline: none; }
+    .finput:focus, .fselect:focus { border-color: var(--gold); }
+    .fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .factions { display: flex; gap: 8px; margin-top: 18px; }
+    .factions .btn { flex: 1; padding: 10px; font-size: 12px; }
+    .premium-badge { background: rgba(227,179,65,0.15); border: 1px solid var(--gold); color: var(--gold); padding: 2px 8px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; }
+    .desc-cell { color: var(--text2); font-size: 11px; }
+    .msg-ok { background: rgba(63,185,80,0.1); border: 1px solid var(--green); color: var(--green); padding: 9px 12px; font-size: 11px; margin-bottom: 12px; }
+    .msg-err { background: rgba(248,81,73,0.1); border: 1px solid var(--red); color: var(--red); padding: 9px 12px; font-size: 11px; margin-bottom: 12px; }
   </style>
 </head>
 <body>
-  <div id="root"></div>
 
-  <script type="text/babel">
-    const { useState, useEffect, useRef } = React;
 
-    // Initialize Supabase
-    const SUPABASE_URL = 'https://zktbctqsslnbenjjviea.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_Wwc43hLC4-0YFmcMyGB39g_pWPfOSEo';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const STRIPE_PUBLISHABLE_KEY = 'pk_test_YOUR_KEY_HERE';
-    let stripe;
+<div class="main-header">
+  <div class="header-left">
+    <div class="header-title">WALL STREET INTELLIGENCE DASHBOARD &nbsp;|&nbsp; <span>HIGH-FIDELITY DISTRESSED ALPHA</span></div>
+    <div class="header-stats">
+      <div class="stat-pill stat-gold">▶ ACTIVE SIGNALS: <span id="count-total">0</span></div>
+      <div class="stat-pill stat-green">◆ EXCLUSIVE CLAIMS AVAILABLE: <span id="count-active">0</span></div>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="btn" id="btn-admin-toggle" onclick="toggleAdmin()">ADMIN LOGIN</button>
+    <button class="btn btn-gold" id="btn-upload" onclick="openUpload()" style="display:none">+ UPLOAD DEAL</button>
+  </div>
+</div>
 
-    const projects = [
-      { id: 'vulcan', name: 'Project Vulcan', sector: 'Precision Mfg', revenue: '$68M', capital: '$15M', liquidity: 'Verified gap in contract scaling and raw material cost volatility.' },
-      { id: 'torque', name: 'Project Torque', sector: 'EComm/Parts', revenue: '$65M', capital: '$15M', liquidity: 'Inventory lifecycle mismatch; primary transition to EV performance hardware.' },
-      { id: 'granite', name: 'Project Granite', sector: 'Construction', revenue: '$58M', capital: '$14M', liquidity: 'Operational bridge required for equipment lease obligations and cash flow gap.' },
-      { id: 'atlas', name: 'Project Atlas', sector: 'Industrial Tech', revenue: '$42M', capital: '$12M', liquidity: 'Confirmed revenue contraction requiring a strategic operational pivot.' }
-    ];
+<div class="syndicate-bar">⚠ <strong>JOIN THE SYNDICATE:</strong> Signed Joinder &amp; NDA required for full facility access.</div>
 
-    function App() {
-      const [user, setUser] = useState(null);
-      const [authMode, setAuthMode] = useState('login'); // login or signup
-      const [email, setEmail] = useState('');
-      const [password, setPassword] = useState('');
-      const [loading, setLoading] = useState(false);
-      const [message, setMessage] = useState('');
-      const [isAdmin, setIsAdmin] = useState(false);
-      const [showAuthModal, setShowAuthModal] = useState(false);
-      const [showPaymentModal, setShowPaymentModal] = useState(false);
-      const [selectedProject, setSelectedProject] = useState(null);
-      const [purchases, setPurchases] = useState({});
-      const [files, setFiles] = useState({});
-      const [adminTab, setAdminTab] = useState('upload');
-      const [countdowns, setCountdowns] = useState({});
+<div class="filter-bar">
+  <span class="filter-label">FILTER:</span>
+  <select class="flt" id="f-region" onchange="renderTable()">
+    <option>All Regions</option><option>NYC Metro</option><option>Miami</option><option>Houston</option>
+    <option>Delaware (Foreign)</option><option>Chicago</option><option>Los Angeles</option>
+    <option>Atlanta</option><option>Dallas</option><option>Philadelphia</option>
+  </select>
+  <select class="flt" id="f-sector" onchange="renderTable()">
+    <option>All Sectors</option><option>Precision Mfg.</option><option>Logistics/Cold</option>
+    <option>RCM/Healthcare</option><option>EComm/Parts</option><option>Construction</option>
+    <option>Industrial Tech</option><option>Business Services</option><option>Distribution</option>
+  </select>
+  <select class="flt" id="f-collateral" onchange="renderTable()">
+    <option>All Types</option><option>1st Lien</option><option>Senior Secured</option>
+    <option>2nd Lien</option><option>Mezzanine</option><option>ABL</option><option>Equipment</option>
+  </select>
+  <input class="flt" id="f-search" placeholder="Search deals..." oninput="renderTable()">
+</div>
 
-      useEffect(() => {
-        loadStripe();
-        checkAuth();
-      }, []);
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th onclick="sortBy('deal_id')">Deal ID ⇅</th>
+        <th onclick="sortBy('sector')">Sector ⇅</th>
+        <th onclick="sortBy('region')">Region ⇅</th>
+        <th onclick="sortBy('forensic_signal')">Forensic Signal ⇅</th>
+        <th onclick="sortBy('facility_min')">Facility Size ($M) ⇅</th>
+        <th onclick="sortBy('collateral_type')">Collateral ⇅</th>
+        <th onclick="sortBy('yield_rate')">Yield % ⇅</th>
+        <th onclick="sortBy('description')">Description ⇅</th>
+        <th>Status</th>
+        <th>Action</th>
+        <th id="admin-col" style="display:none">Admin</th>
+      </tr>
+    </thead>
+    <tbody id="deals-tbody">
+      <tr><td colspan="10" class="empty-msg">LOADING LIVE FEED...</td></tr>
+    </tbody>
+  </table>
+</div>
 
-      // Timer for download expiration
-      useEffect(() => {
-        const interval = setInterval(() => {
-          const newCountdowns = {};
-          Object.entries(purchases).forEach(([projectId, purchase]) => {
-            if (purchase && typeof purchase === 'object' && purchase.expiresAt) {
-              const now = Date.now();
-              const timeLeft = purchase.expiresAt - now;
-              
-              if (timeLeft > 0) {
-                const hours = Math.floor(timeLeft / (1000 * 60 * 60));
-                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-                newCountdowns[projectId] = `${hours}h ${minutes}m ${seconds}s`;
-              } else {
-                newCountdowns[projectId] = 'expired';
-              }
-            }
-          });
-          setCountdowns(newCountdowns);
-        }, 1000);
+<div class="overlay" id="modal-auth">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-auth')">×</button>
+    <div class="modal-title">ADMIN ACCESS</div>
+    <div id="auth-msg"></div>
+    <div class="frow">
+      <label class="flabel">Password</label>
+      <input class="finput" type="password" id="admin-pass" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="factions">
+      <button class="btn btn-gold" onclick="doLogin()">LOGIN</button>
+      <button class="btn" onclick="closeModal('modal-auth')">CANCEL</button>
+    </div>
+  </div>
+</div>
 
-        return () => clearInterval(interval);
-      }, [purchases]);
+<div class="overlay" id="modal-upload">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-upload')">×</button>
+    <div class="modal-title">UPLOAD NEW DEAL</div>
+    <div id="upload-msg"></div>
+    <div class="frow">
+      <label class="flabel">Deal ID (e.g. NY-405)</label>
+      <input class="finput" id="u-id" placeholder="TX-406">
+    </div>
+    <div class="fgrid">
+      <div class="frow">
+        <label class="flabel">Sector</label>
+        <select class="fselect" id="u-sector">
+          <option>Precision Mfg.</option><option>Logistics/Cold</option><option>RCM/Healthcare</option>
+          <option>EComm/Parts</option><option>Construction</option><option>Industrial Tech</option>
+          <option>Business Services</option><option>Distribution</option>
+        </select>
+      </div>
+      <div class="frow">
+        <label class="flabel">Region</label>
+        <select class="fselect" id="u-region">
+          <option>NYC Metro</option><option>Miami</option><option>Houston</option>
+          <option>Delaware (Foreign)</option><option>Chicago</option><option>Los Angeles</option>
+          <option>Atlanta</option><option>Dallas</option><option>Philadelphia</option>
+        </select>
+      </div>
+    </div>
+    <div class="frow">
+      <label class="flabel">Forensic Signal</label>
+      <select class="fselect" id="u-signal">
+        <option>Capital Stack Mismatch</option><option>Perfection Lapse Detected</option>
+        <option>Stacking Debt Warning</option><option>Entity Error LMM</option>
+        <option>Entity Error Lapse</option><option>Covenant Breach Signal</option>
+        <option>Liquidity Gap Confirmed</option><option>Refinance Window Closing</option>
+      </select>
+    </div>
+    <div class="fgrid">
+      <div class="frow">
+        <label class="flabel">Facility Min ($M)</label>
+        <input class="finput" id="u-fmin" type="number" step="0.1" placeholder="3.0">
+      </div>
+      <div class="frow">
+        <label class="flabel">Facility Max ($M)</label>
+        <input class="finput" id="u-fmax" type="number" step="0.1" placeholder="5.0">
+      </div>
+    </div>
+    <div class="frow">
+      <label class="flabel">Description</label>
+      <select class="fselect" id="u-description">
+        <option>Capital Need Validated</option>
+        <option>CEO took our call</option>
+        <option>Data Driven Prospect</option>
+      </select>
+    </div>
+    <div class="fgrid">
+      <div class="frow">
+        <label class="flabel">Collateral Type</label>
+        <select class="fselect" id="u-collateral">
+          <option>1st Lien</option><option>Senior Secured</option><option>2nd Lien</option>
+          <option>Mezzanine</option><option>ABL</option><option>Equipment</option>
+        </select>
+      </div>
+      <div class="frow">
+        <label class="flabel">Yield Rate (%)</label>
+        <input class="finput" id="u-yield" type="number" step="0.1" placeholder="16.5">
+      </div>
+    </div>
+    <div class="factions">
+      <button class="btn btn-gold" onclick="submitDeal()">SUBMIT TO LIVE FEED</button>
+      <button class="btn" onclick="closeModal('modal-upload')">CANCEL</button>
+    </div>
+  </div>
+</div>
 
-      async function loadStripe() {
-        stripe = await window.Stripe(STRIPE_PUBLISHABLE_KEY);
-      }
+<script>
+  const SUPABASE_URL = 'https://zktbctqsslnbenjjviea.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_Wwc43hLC4-0YFmcMyGB39g_pWPfOSEo';
+  const ADMIN_PASSWORD = 'lmm-admin-2025';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-      async function checkAuth() {
-        const { data } = await supabase.auth.getSession();
-        if (data.session) {
-          setUser(data.session.user);
-          loadPurchases(data.session.user.email);
-        }
-      }
+  let allDeals = [];
+  let isAdmin = false;
+  let sortCol = 'deal_id';
+  let sortDir = 'asc';
+  let usingFallback = false;
 
-      async function loadPurchases(userEmail) {
-        const { data } = await supabase
-          .from('purchases')
-          .select('*')
-          .eq('status', 'completed');
-        
-        const purchaseMap = {};
-        const now = Date.now();
-        data?.forEach(p => {
-          const expiresAt = new Date(p.download_expires_at).getTime();
-          if (expiresAt > now) {
-            purchaseMap[p.project_id] = {
-              purchased: true,
-              expiresAt: expiresAt
-            };
-          }
-        });
-        setPurchases(purchaseMap);
-      }
+  const FALLBACK = [
+    { id:1, deal_id:'NY-401', sector:'Precision Mfg.', region:'NYC Metro', forensic_signal:'Capital Stack Mismatch', facility_min:4.5, facility_max:6.0, collateral_type:'1st Lien', yield_rate:16.5, status:'active', description:'Capital Need Validated' },
+    { id:2, deal_id:'FL-402', sector:'Logistics/Cold', region:'Miami', forensic_signal:'Perfection Lapse Detected', facility_min:3.0, facility_max:5.0, collateral_type:'Senior Secured', yield_rate:15.8, status:'active', description:'CEO took our call' },
+    { id:3, deal_id:'TX-403', sector:'RCM/Healthcare', region:'Houston', forensic_signal:'Stacking Debt Warning', facility_min:5.2, facility_max:7.5, collateral_type:'1st Lien', yield_rate:17.2, status:'active', description:'Data Driven Prospect' },
+    { id:4, deal_id:'DE-404', sector:'EComm/Parts', region:'Delaware (Foreign)', forensic_signal:'Entity Error LMM', facility_min:2.8, facility_max:4.5, collateral_type:'Senior Secured', yield_rate:14.9, status:'active', description:'Capital Need Validated' },
+  ];
 
-      async function loadFiles() {
-        const { data } = await supabase.storage.from('teasers').list();
-        const fileMap = {};
-        data?.forEach(f => {
-          const project = f.name.split('-')[0];
-          fileMap[project] = f.name;
-        });
-        setFiles(fileMap);
-      }
+  async function loadDeals() {
+    try {
+      const { data, error } = await sb.from('deals').select('*').order('created_at', { ascending: false });
+      if (error || !data || data.length === 0) { allDeals = FALLBACK; usingFallback = true; }
+      else { allDeals = data; }
+    } catch(e) { allDeals = FALLBACK; usingFallback = true; }
+    updateCounts();
+    renderTable();
+  }
 
-      async function handleAuth(e) {
-        e.preventDefault();
-        setLoading(true);
-        setMessage('');
+  function updateCounts() {
+    document.getElementById('count-total').textContent = allDeals.length;
+    document.getElementById('count-active').textContent = allDeals.filter(d => d.status !== 'funded').length;
+  }
 
-        try {
-          if (authMode === 'signup') {
-            const { error } = await supabase.auth.signUp({ email, password });
-            if (error) throw error;
-            setMessage('Check your email to confirm signup!');
-            setAuthMode('login');
-          } else {
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-            if (error) throw error;
-            setUser(data.user);
-            setShowAuthModal(false);
-            loadPurchases(email);
-          }
-        } catch (err) {
-          setMessage('Error: ' + err.message);
-        }
-        setLoading(false);
-      }
+  function renderTable() {
+    const region = document.getElementById('f-region').value;
+    const sector = document.getElementById('f-sector').value;
+    const collateral = document.getElementById('f-collateral').value;
+    const search = document.getElementById('f-search').value.toLowerCase();
+    document.getElementById('admin-col').style.display = isAdmin ? '' : 'none';
 
-      async function handleLogout() {
-        await supabase.auth.signOut();
-        setUser(null);
-        setPurchases({});
-      }
+    let rows = allDeals.filter(x => {
+      if (region !== 'All Regions' && x.region !== region) return false;
+      if (sector !== 'All Sectors' && x.sector !== sector) return false;
+      if (collateral !== 'All Types' && x.collateral_type !== collateral) return false;
+      if (search && ![(x.deal_id||''),(x.sector||''),(x.region||''),(x.forensic_signal||'')].some(v => v.toLowerCase().includes(search))) return false;
+      return true;
+    });
 
-      function openPaymentModal(project) {
-        if (!user) {
-          setShowAuthModal(true);
-          return;
-        }
-        setSelectedProject(project);
-        setShowPaymentModal(true);
-        setTimeout(() => {
-          // Stripe elements would mount here
-        }, 100);
-      }
+    rows.sort((a, b) => {
+      let va = a[sortCol], vb = b[sortCol];
+      if (typeof va === 'string') { va = va.toLowerCase(); vb = (vb||'').toLowerCase(); }
+      if (va < vb) return sortDir === 'asc' ? -1 : 1;
+      if (va > vb) return sortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
 
-      async function handlePayment(e) {
-        e.preventDefault();
-        setLoading(true);
+    const tbody = document.getElementById('deals-tbody');
+    if (!rows.length) { tbody.innerHTML = '<tr><td colspan="10" class="empty-msg">NO SIGNALS MATCH FILTERS</td></tr>'; return; }
 
-        try {
-          // Create payment intent
-          const response = await fetch('/api/create-payment', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              email: user.email,
-              projectId: selectedProject.id
-            })
-          });
+    tbody.innerHTML = rows.map(d => {
+      const funded = d.status === 'funded';
+      return `<tr class="${funded?'funded':''}">
+        <td><span class="deal-id">${d.deal_id}</span></td>
+        <td><span class="sector-badge">${d.sector}</span></td>
+        <td><span class="region-cell">${d.region}</span></td>
+        <td>${d.forensic_signal}</td>
+        <td><span class="facility-cell">$${d.facility_min}M – $${d.facility_max}M</span></td>
+        <td>${d.collateral_type}</td>
+        <td><span class="yield-cell">${d.yield_rate}%</span></td>
+        <td>${d.description === 'CEO took our call' ? '<span class="premium-badge">★ PREMIUM</span>' : `<span class="desc-cell">${d.description||''}</span>`}</td>
+        <td>${funded?'<span class="funded-badge">FUNDED</span>':'<span class="active-badge">● ACTIVE</span>'}</td>
+        <td>${funded?'':'<button class="btn btn-green" style="font-size:10px;padding:4px 10px">VIEW CM ⟶</button>'}</td>
+        ${isAdmin?`<td style="display:flex;gap:6px;padding:9px 14px">
+          <button class="btn" style="font-size:10px;padding:4px 8px" onclick="markFunded(${d.id})">${funded?'REACTIVATE':'MARK FUNDED'}</button>
+          <button class="btn btn-red" style="font-size:10px;padding:4px 8px" onclick="deleteDeal(${d.id})">DEL</button>
+        </td>`:''}
+      </tr>`;
+    }).join('');
+  }
 
-          const { clientSecret } = await response.json();
+  function sortBy(col) {
+    sortDir = sortCol === col ? (sortDir === 'asc' ? 'desc' : 'asc') : 'asc';
+    sortCol = col;
+    renderTable();
+  }
 
-          // Confirm payment (in test mode, use test card)
-          const result = await stripe.confirmCardPayment(clientSecret, {
-            payment_method: {
-              card: {
-                token: 'tok_visa' // Stripe test token
-              }
-            }
-          });
-
-          if (result.paymentIntent.status === 'succeeded') {
-            // Confirm with backend
-            await fetch('/api/confirm-payment', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ paymentIntentId: result.paymentIntent.id })
-            });
-
-            // Add 12 hours to current time for expiration
-            const expirationTime = new Date(Date.now() + 12 * 60 * 60 * 1000);
-            
-            setPurchases({ 
-              ...purchases, 
-              [selectedProject.id]: {
-                purchased: true,
-                expiresAt: expirationTime.getTime()
-              }
-            });
-            setShowPaymentModal(false);
-            setMessage('Payment successful! Download available for 12 hours.');
-          }
-        } catch (err) {
-          setMessage('Payment error: ' + err.message);
-        }
-        setLoading(false);
-      }
-
-      if (!user) {
-        return (
-          <>
-            <div className="container">
-              <header>
-                <div>
-                  <div className="logo">
-                    LMM INTELLIGENCE
-                    <small>Wall Street Research</small>
-                  </div>
-                </div>
-                <button onClick={() => setShowAuthModal(true)}>Sign In</button>
-              </header>
-
-              <div style={{ marginTop: '4rem', textAlign: 'center' }}>
-                <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', fontFamily: "'Playfair Display', serif" }}>Investment Intelligence Platform</h1>
-                <p style={{ fontSize: '1.1rem', color: 'var(--text-muted)', marginBottom: '2rem' }}>Access exclusive research on high-potential acquisition targets</p>
-              </div>
-
-              <div className="projects-grid">
-                {projects.map(proj => (
-                  <div key={proj.id} className="project-card">
-                    <div className="project-id">{proj.name}</div>
-                    <div className="project-meta">
-                      <div className="meta-item">
-                        <div className="meta-label">Sector</div>
-                        <div className="meta-value">{proj.sector}</div>
-                      </div>
-                      <div className="meta-item">
-                        <div className="meta-label">Revenue</div>
-                        <div className="meta-value">{proj.revenue}</div>
-                      </div>
-                    </div>
-                    <div className="description">{proj.liquidity}</div>
-                    <div className="file-status">
-                      <div className="file-badge">Teaser Available</div>
-                      <div className="file-badge unavailable">Full Report Locked</div>
-                    </div>
-                    <div className="actions">
-                      <button onClick={() => setShowAuthModal(true)}>Sign In to View</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className={`modal ${showAuthModal ? 'active' : ''}`}>
-              <div className="modal-content">
-                <button className="close-btn" onClick={() => setShowAuthModal(false)}>×</button>
-                <div className="modal-header">{authMode === 'login' ? 'Sign In' : 'Create Account'}</div>
-                {message && (message.includes('Error') ? <div className="error-message">{message}</div> : <div className="success-message">{message}</div>)}
-                <form onSubmit={handleAuth}>
-                  <div className="form-group">
-                    <label>Email</label>
-                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
-                  </div>
-                  <div className="form-group">
-                    <label>Password</label>
-                    <input type="password" value={password} onChange={e => setPassword(e.target.value)} required />
-                  </div>
-                  <div className="form-actions">
-                    <button type="submit" disabled={loading}>{loading ? 'Loading...' : (authMode === 'login' ? 'Sign In' : 'Sign Up')}</button>
-                  </div>
-                </form>
-                <p style={{ marginTop: '1rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                  {authMode === 'login' ? "Don't have an account? " : 'Already have an account? '}
-                  <button style={{ background: 'none', color: 'var(--gold)', border: 'none', cursor: 'pointer', padding: 0 }} onClick={() => { setAuthMode(authMode === 'login' ? 'signup' : 'login'); setMessage(''); }}>
-                    {authMode === 'login' ? 'Sign Up' : 'Sign In'}
-                  </button>
-                </p>
-              </div>
-            </div>
-          </>
-        );
-      }
-
-      if (isAdmin) {
-        return <AdminPanel user={user} onExit={() => setIsAdmin(false)} onLogout={handleLogout} />;
-      }
-
-      return (
-        <>
-          <div className="container">
-            <header>
-              <div>
-                <div className="logo">
-                  LMM INTELLIGENCE
-                  <small>Wall Street Research</small>
-                </div>
-              </div>
-              <div className="header-actions">
-                <div className="user-badge">{user.email}</div>
-                {user.email === 'admin@lmmintelligence.com' && <button onClick={() => setIsAdmin(true)}>Admin Panel</button>}
-                <button className="secondary" onClick={handleLogout}>Sign Out</button>
-              </div>
-            </header>
-
-            <div className="projects-grid">
-              {projects.map(proj => (
-                <div key={proj.id} className="project-card">
-                  <div className="project-id">{proj.name}</div>
-                  <div className="project-meta">
-                    <div className="meta-item">
-                      <div className="meta-label">Sector</div>
-                      <div className="meta-value">{proj.sector}</div>
-                    </div>
-                    <div className="meta-item">
-                      <div className="meta-label">Revenue</div>
-                      <div className="meta-value">{proj.revenue}</div>
-                    </div>
-                    <div className="meta-item">
-                      <div className="meta-label">Capital Need</div>
-                      <div className="meta-value">{proj.capital}</div>
-                    </div>
-                    <div className="meta-item">
-                      <div className="meta-label">Liquidity Trigger</div>
-                      <div className="meta-value">{proj.liquidity}</div>
-                    </div>
-                  </div>
-                  <div className="file-status">
-                    <div className="file-badge">Teaser Available</div>
-                    {purchases[proj.id] ? (
-                      countdowns[proj.id] === 'expired' ? (
-                        <div className="file-badge unavailable">Download Expired</div>
-                      ) : (
-                        <div className="file-badge" style={{ background: 'rgba(76, 175, 80, 0.1)', borderColor: '#4caf50', color: '#4caf50' }}>
-                          {countdowns[proj.id] || 'Loading...'}
-                        </div>
-                      )
-                    ) : (
-                      <div className="file-badge unavailable">Full Report - $2,000</div>
-                    )}
-                  </div>
-                  <div className="actions">
-                    <button onClick={() => window.open(`/teaser-${proj.id}.pdf`)}>View Teaser</button>
-                    {purchases[proj.id] ? (
-                      countdowns[proj.id] === 'expired' ? (
-                        <div style={{ background: 'rgba(200, 100, 100, 0.1)', border: '1px solid #c86464', color: '#f5a5a5', padding: '0.75rem', borderRadius: '4px', textAlign: 'center', fontSize: '0.9rem' }}>
-                          Download window expired after 12 hours. <br/><a href="mailto:admin@lmmintelligence.com" style={{ color: 'inherit', textDecoration: 'underline' }}>Email admin for help</a>
-                        </div>
-                      ) : (
-                        <button onClick={() => window.open(`/full-report-${proj.id}.pdf`)}>Download Full Report</button>
-                      )
-                    ) : (
-                      <button onClick={() => openPaymentModal(proj)}>Purchase Full Report - $2,000</button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className={`modal ${showPaymentModal ? 'active' : ''}`}>
-            <div className="modal-content">
-              <button className="close-btn" onClick={() => setShowPaymentModal(false)}>×</button>
-              <div className="modal-header">Purchase {selectedProject?.name}</div>
-              {message && (message.includes('Error') ? <div className="error-message">{message}</div> : <div className="success-message">{message}</div>)}
-              <div className="payment-info">
-                <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Full Report Access</div>
-                <div className="payment-amount">$2,000.00</div>
-                <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>One-time purchase • Unlimited downloads</div>
-              </div>
-              <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>Use test card: 4242 4242 4242 4242 (any future date, any CVC)</p>
-              <form onSubmit={handlePayment}>
-                <div className="form-group">
-                  <label>Email</label>
-                  <input type="email" value={user.email} disabled />
-                </div>
-                <div className="form-actions">
-                  <button type="submit" disabled={loading}>{loading ? 'Processing...' : 'Pay $2,000'}</button>
-                  <button type="button" className="secondary" onClick={() => setShowPaymentModal(false)}>Cancel</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </>
-      );
+  function toggleAdmin() {
+    if (isAdmin) {
+      isAdmin = false;
+      document.getElementById('btn-admin-toggle').textContent = 'ADMIN LOGIN';
+      document.getElementById('btn-upload').style.display = 'none';
+      renderTable();
+    } else {
+      document.getElementById('auth-msg').innerHTML = '';
+      document.getElementById('admin-pass').value = '';
+      document.getElementById('modal-auth').classList.add('open');
+      setTimeout(() => document.getElementById('admin-pass').focus(), 100);
     }
+  }
 
-    function AdminPanel({ user, onExit, onLogout }) {
-      const [activeTab, setActiveTab] = useState('upload');
-      const [projects, setProjects] = useState([
-        { id: 'vulcan', name: 'Project Vulcan' },
-        { id: 'torque', name: 'Project Torque' },
-        { id: 'granite', name: 'Project Granite' },
-        { id: 'atlas', name: 'Project Atlas' }
-      ]);
-      const [selectedProject, setSelectedProject] = useState('vulcan');
-      const [teaserFile, setTeaserFile] = useState(null);
-      const [fullReportFile, setFullReportFile] = useState(null);
-      const [message, setMessage] = useState('');
-      const [loading, setLoading] = useState(false);
-
-      async function handleUpload(fileType) {
-        if (fileType === 'teaser' && !teaserFile) {
-          setMessage('Please select a teaser file');
-          return;
-        }
-        if (fileType === 'full' && !fullReportFile) {
-          setMessage('Please select a full report file');
-          return;
-        }
-
-        setLoading(true);
-        try {
-          const file = fileType === 'teaser' ? teaserFile : fullReportFile;
-          const bucket = fileType === 'teaser' ? 'teasers' : 'full-reports';
-          const fileName = `${selectedProject}-${fileType}.pdf`;
-
-          const { error } = await supabase.storage
-            .from(bucket)
-            .upload(fileName, file, { upsert: true });
-
-          if (error) throw error;
-          setMessage(`${fileType === 'teaser' ? 'Teaser' : 'Full report'} uploaded successfully!`);
-          if (fileType === 'teaser') setTeaserFile(null);
-          else setFullReportFile(null);
-        } catch (err) {
-          setMessage('Error: ' + err.message);
-        }
-        setLoading(false);
-      }
-
-      return (
-        <>
-          <div className="container">
-            <header>
-              <div>
-                <div className="logo">
-                  LMM INTELLIGENCE
-                  <small>Admin Panel</small>
-                </div>
-              </div>
-              <div className="header-actions">
-                <button className="secondary" onClick={onExit}>Back to Dashboard</button>
-                <button className="secondary" onClick={onLogout}>Sign Out</button>
-              </div>
-            </header>
-
-            <div className="admin-nav">
-              <button className={activeTab === 'upload' ? 'active' : ''} onClick={() => setActiveTab('upload')}>Upload Files</button>
-              <button className={activeTab === 'manage' ? 'active' : ''} onClick={() => setActiveTab('manage')}>Manage Files</button>
-            </div>
-
-            {message && (message.includes('Error') ? <div className="error-message">{message}</div> : <div className="success-message">{message}</div>)}
-
-            {activeTab === 'upload' && (
-              <div style={{ maxWidth: '600px' }}>
-                <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', color: 'var(--gold)', fontFamily: "'Playfair Display', serif" }}>Upload Project Files</h2>
-                
-                <div className="form-group">
-                  <label>Select Project</label>
-                  <select value={selectedProject} onChange={e => setSelectedProject(e.target.value)}>
-                    {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                  </select>
-                </div>
-
-                <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', padding: '2rem', borderRadius: '4px', marginBottom: '2rem' }}>
-                  <h3 style={{ color: 'var(--text-light)', marginBottom: '1rem' }}>Teaser PDF</h3>
-                  <input type="file" accept=".pdf" onChange={e => setTeaserFile(e.target.files[0])} />
-                  {teaserFile && <p style={{ marginTop: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>✓ {teaserFile.name}</p>}
-                  <button onClick={() => handleUpload('teaser')} disabled={loading} style={{ marginTop: '1rem', width: '100%' }}>{loading ? 'Uploading...' : 'Upload Teaser'}</button>
-                </div>
-
-                <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', padding: '2rem', borderRadius: '4px' }}>
-                  <h3 style={{ color: 'var(--text-light)', marginBottom: '1rem' }}>Full Report PDF</h3>
-                  <input type="file" accept=".pdf" onChange={e => setFullReportFile(e.target.files[0])} />
-                  {fullReportFile && <p style={{ marginTop: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>✓ {fullReportFile.name}</p>}
-                  <button onClick={() => handleUpload('full')} disabled={loading} style={{ marginTop: '1rem', width: '100%' }}>{loading ? 'Uploading...' : 'Upload Full Report'}</button>
-                </div>
-              </div>
-            )}
-          </div>
-        </>
-      );
+  function doLogin() {
+    if (document.getElementById('admin-pass').value === ADMIN_PASSWORD) {
+      isAdmin = true;
+      document.getElementById('btn-admin-toggle').textContent = 'EXIT ADMIN';
+      document.getElementById('btn-upload').style.display = '';
+      closeModal('modal-auth');
+      renderTable();
+    } else {
+      document.getElementById('auth-msg').innerHTML = '<div class="msg-err">Invalid password.</div>';
     }
+  }
 
-    ReactDOM.render(<App />, document.getElementById('root'));
-  </script>
+  function openUpload() {
+    document.getElementById('upload-msg').innerHTML = '';
+    document.getElementById('u-id').value = '';
+    document.getElementById('modal-upload').classList.add('open');
+  }
+
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+  async function submitDeal() {
+    const deal_id = document.getElementById('u-id').value.trim();
+    const fmin = document.getElementById('u-fmin').value;
+    const fmax = document.getElementById('u-fmax').value;
+    const yld = document.getElementById('u-yield').value;
+    if (!deal_id || !fmin || !fmax || !yld) {
+      document.getElementById('upload-msg').innerHTML = '<div class="msg-err">ERROR: All fields required.</div>';
+      return;
+    }
+    const deal = { deal_id, sector: document.getElementById('u-sector').value, region: document.getElementById('u-region').value, forensic_signal: document.getElementById('u-signal').value, facility_min: parseFloat(fmin), facility_max: parseFloat(fmax), collateral_type: document.getElementById('u-collateral').value, yield_rate: parseFloat(yld), description: document.getElementById('u-description').value, status: 'active' };
+    if (usingFallback) {
+      allDeals.unshift({ ...deal, id: Date.now() });
+      updateCounts(); renderTable();
+      document.getElementById('upload-msg').innerHTML = '<div class="msg-ok">SUCCESS: Deal added.</div>';
+      document.getElementById('u-id').value = '';
+      return;
+    }
+    const { error } = await sb.from('deals').insert([deal]);
+    if (error) { document.getElementById('upload-msg').innerHTML = `<div class="msg-err">ERROR: ${error.message}</div>`; }
+    else { document.getElementById('upload-msg').innerHTML = '<div class="msg-ok">SUCCESS: Deal uploaded to live feed.</div>'; document.getElementById('u-id').value = ''; await loadDeals(); }
+  }
+
+  async function markFunded(id) {
+    const deal = allDeals.find(d => d.id === id);
+    if (!deal) return;
+    const newStatus = deal.status === 'funded' ? 'active' : 'funded';
+    if (!usingFallback) await sb.from('deals').update({ status: newStatus }).eq('id', id);
+    deal.status = newStatus;
+    updateCounts(); renderTable();
+  }
+
+  async function deleteDeal(id) {
+    const deal = allDeals.find(d => d.id === id);
+    if (!confirm('Delete ' + (deal?.deal_id) + '? Cannot be undone.')) return;
+    if (!usingFallback) await sb.from('deals').delete().eq('id', id);
+    allDeals = allDeals.filter(d => d.id !== id);
+    updateCounts(); renderTable();
+  }
+
+  loadDeals();
+</script>
 </body>
 </html>
