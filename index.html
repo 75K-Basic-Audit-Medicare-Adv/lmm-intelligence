@@ -17,8 +17,6 @@
     }
     body { font-family: 'IBM Plex Mono', monospace; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 13px; }
 
-
-
     .main-header { background: var(--bg2); border-bottom: 2px solid var(--gold); padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
     .header-left { display: flex; flex-direction: column; gap: 8px; }
     .header-title { font-size: 13px; font-weight: 700; letter-spacing: 0.5px; line-height: 1.5; }
@@ -51,42 +49,43 @@
     thead tr { background: var(--bg3); border-bottom: 2px solid var(--border2); }
     th { padding: 10px 14px; text-align: left; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; color: var(--text2); text-transform: uppercase; white-space: nowrap; cursor: pointer; user-select: none; }
     th:hover { color: var(--gold); }
-    tbody tr { border-bottom: 1px solid var(--border); }
+    tbody tr { border-bottom: 3px solid #2a3040; }
     tbody tr:hover { background: rgba(255,255,255,0.02); }
     tbody tr.funded { opacity: 0.4; }
-    td { padding: 9px 14px; vertical-align: middle; white-space: nowrap; }
+    td { padding: 10px 14px; vertical-align: middle; white-space: nowrap; }
 
     .deal-id { color: var(--blue); font-weight: 700; font-size: 12px; }
     .sector-badge { background: var(--bg3); border: 1px solid var(--border2); padding: 2px 7px; font-size: 10px; font-weight: 600; }
     .region-cell { color: var(--text2); font-size: 12px; }
     .facility-cell { color: var(--gold); font-weight: 700; }
-    .yield-cell { color: var(--green); font-weight: 700; }
+    .financing-cell { color: var(--blue); font-size: 11px; font-weight: 600; }
+    .interaction-cell { color: var(--text2); font-size: 11px; max-width: 220px; white-space: normal; line-height: 1.4; }
     .funded-badge { background: rgba(248,81,73,0.1); border: 1px solid var(--red); color: var(--red); padding: 2px 8px; font-size: 10px; font-weight: 700; letter-spacing: 1px; }
     .active-badge { color: var(--green); font-size: 10px; font-weight: 700; letter-spacing: 1px; }
+    .premium-badge { display: block; color: var(--gold); font-size: 10px; font-weight: 700; letter-spacing: 2px; margin-bottom: 4px; }
+    .desc-cell { color: var(--text2); font-size: 11px; }
+    .status-cell { display: flex; flex-direction: column; gap: 2px; }
     .empty-msg { text-align: center; padding: 50px; color: var(--text3); }
 
     .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center; }
     .overlay.open { display: flex; }
-    .modal { background: var(--bg2); border: 1px solid var(--border2); border-top: 2px solid var(--gold); padding: 28px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; position: relative; }
+    .modal { background: var(--bg2); border: 1px solid var(--border2); border-top: 2px solid var(--gold); padding: 28px; width: 90%; max-width: 520px; max-height: 90vh; overflow-y: auto; position: relative; }
     .modal-title { font-size: 13px; font-weight: 700; color: var(--gold); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 20px; }
     .modal-close { position: absolute; top: 14px; right: 16px; background: none; border: none; color: var(--text2); font-size: 20px; cursor: pointer; font-family: inherit; }
     .modal-close:hover { color: var(--text); }
     .frow { margin-bottom: 14px; }
     .flabel { display: block; font-size: 10px; font-weight: 700; letter-spacing: 1px; color: var(--text2); text-transform: uppercase; margin-bottom: 5px; }
-    .finput, .fselect { width: 100%; font-family: 'IBM Plex Mono', monospace; font-size: 12px; background: var(--bg3); border: 1px solid var(--border2); color: var(--text); padding: 8px 10px; outline: none; }
-    .finput:focus, .fselect:focus { border-color: var(--gold); }
+    .finput, .fselect, .ftextarea { width: 100%; font-family: 'IBM Plex Mono', monospace; font-size: 12px; background: var(--bg3); border: 1px solid var(--border2); color: var(--text); padding: 8px 10px; outline: none; }
+    .finput:focus, .fselect:focus, .ftextarea:focus { border-color: var(--gold); }
+    .ftextarea { resize: vertical; min-height: 70px; }
     .fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .factions { display: flex; gap: 8px; margin-top: 18px; }
     .factions .btn { flex: 1; padding: 10px; font-size: 12px; }
-    .premium-badge { background: rgba(227,179,65,0.15); border: 1px solid var(--gold); color: var(--gold); padding: 2px 8px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; }
-    .desc-cell { color: var(--text2); font-size: 11px; }
     .msg-ok { background: rgba(63,185,80,0.1); border: 1px solid var(--green); color: var(--green); padding: 9px 12px; font-size: 11px; margin-bottom: 12px; }
     .msg-err { background: rgba(248,81,73,0.1); border: 1px solid var(--red); color: var(--red); padding: 9px 12px; font-size: 11px; margin-bottom: 12px; }
   </style>
 </head>
 <body>
-
-
 
 <div class="main-header">
   <div class="header-left">
@@ -116,9 +115,9 @@
     <option>RCM/Healthcare</option><option>EComm/Parts</option><option>Construction</option>
     <option>Industrial Tech</option><option>Business Services</option><option>Distribution</option>
   </select>
-  <select class="flt" id="f-collateral" onchange="renderTable()">
-    <option>All Types</option><option>1st Lien</option><option>Senior Secured</option>
-    <option>2nd Lien</option><option>Mezzanine</option><option>ABL</option><option>Equipment</option>
+  <select class="flt" id="f-financing" onchange="renderTable()">
+    <option>All Financing Types</option><option>Mezzanine</option><option>Bridge</option>
+    <option>Rescue/Bridge</option><option>Growth</option><option>Refinance</option><option>Distressed</option>
   </select>
   <input class="flt" id="f-search" placeholder="Search deals..." oninput="renderTable()">
 </div>
@@ -132,8 +131,8 @@
         <th onclick="sortBy('region')">Region ⇅</th>
         <th onclick="sortBy('forensic_signal')">Forensic Signal ⇅</th>
         <th onclick="sortBy('facility_min')">Facility Size ($M) ⇅</th>
-        <th onclick="sortBy('collateral_type')">Collateral ⇅</th>
-        <th onclick="sortBy('yield_rate')">Yield % ⇅</th>
+        <th onclick="sortBy('financing_type')">Financing Type ⇅</th>
+        <th onclick="sortBy('last_interaction')">Last Interaction</th>
         <th onclick="sortBy('description')">Description ⇅</th>
         <th>Status</th>
         <th>Action</th>
@@ -141,11 +140,12 @@
       </tr>
     </thead>
     <tbody id="deals-tbody">
-      <tr><td colspan="10" class="empty-msg">LOADING LIVE FEED...</td></tr>
+      <tr><td colspan="11" class="empty-msg">LOADING LIVE FEED...</td></tr>
     </tbody>
   </table>
 </div>
 
+<!-- ADMIN LOGIN MODAL -->
 <div class="overlay" id="modal-auth">
   <div class="modal">
     <button class="modal-close" onclick="closeModal('modal-auth')">×</button>
@@ -162,6 +162,7 @@
   </div>
 </div>
 
+<!-- UPLOAD MODAL -->
 <div class="overlay" id="modal-upload">
   <div class="modal">
     <button class="modal-close" onclick="closeModal('modal-upload')">×</button>
@@ -209,25 +210,23 @@
       </div>
     </div>
     <div class="frow">
+      <label class="flabel">Financing Type</label>
+      <select class="fselect" id="u-financing">
+        <option>Mezzanine</option><option>Bridge</option><option>Rescue/Bridge</option>
+        <option>Growth</option><option>Refinance</option><option>Distressed</option>
+      </select>
+    </div>
+    <div class="frow">
+      <label class="flabel">Last Interaction (public info only)</label>
+      <textarea class="ftextarea" id="u-interaction" placeholder="e.g. CEO spoken to on 4/10/26&#10;CFO confirms covenant breach x2"></textarea>
+    </div>
+    <div class="frow">
       <label class="flabel">Description</label>
       <select class="fselect" id="u-description">
         <option>Capital Need Validated</option>
-        <option>CEO took our call</option>
+        <option>C-suite took our call</option>
         <option>Data Driven Prospect</option>
       </select>
-    </div>
-    <div class="fgrid">
-      <div class="frow">
-        <label class="flabel">Collateral Type</label>
-        <select class="fselect" id="u-collateral">
-          <option>1st Lien</option><option>Senior Secured</option><option>2nd Lien</option>
-          <option>Mezzanine</option><option>ABL</option><option>Equipment</option>
-        </select>
-      </div>
-      <div class="frow">
-        <label class="flabel">Yield Rate (%)</label>
-        <input class="finput" id="u-yield" type="number" step="0.1" placeholder="16.5">
-      </div>
     </div>
     <div class="factions">
       <button class="btn btn-gold" onclick="submitDeal()">SUBMIT TO LIVE FEED</button>
@@ -249,10 +248,10 @@
   let usingFallback = false;
 
   const FALLBACK = [
-    { id:1, deal_id:'NY-401', sector:'Precision Mfg.', region:'NYC Metro', forensic_signal:'Capital Stack Mismatch', facility_min:4.5, facility_max:6.0, collateral_type:'1st Lien', yield_rate:16.5, status:'active', description:'Capital Need Validated' },
-    { id:2, deal_id:'FL-402', sector:'Logistics/Cold', region:'Miami', forensic_signal:'Perfection Lapse Detected', facility_min:3.0, facility_max:5.0, collateral_type:'Senior Secured', yield_rate:15.8, status:'active', description:'CEO took our call' },
-    { id:3, deal_id:'TX-403', sector:'RCM/Healthcare', region:'Houston', forensic_signal:'Stacking Debt Warning', facility_min:5.2, facility_max:7.5, collateral_type:'1st Lien', yield_rate:17.2, status:'active', description:'Data Driven Prospect' },
-    { id:4, deal_id:'DE-404', sector:'EComm/Parts', region:'Delaware (Foreign)', forensic_signal:'Entity Error LMM', facility_min:2.8, facility_max:4.5, collateral_type:'Senior Secured', yield_rate:14.9, status:'active', description:'Capital Need Validated' },
+    { id:1, deal_id:'NY-401', sector:'Precision Mfg.', region:'NYC Metro', forensic_signal:'Capital Stack Mismatch', facility_min:4.5, facility_max:6.0, financing_type:'Bridge', last_interaction:'CFO confirms covenant breach x2', description:'Capital Need Validated', status:'active' },
+    { id:2, deal_id:'FL-402', sector:'Logistics/Cold', region:'Miami', forensic_signal:'Perfection Lapse Detected', facility_min:3.0, facility_max:5.0, financing_type:'Rescue/Bridge', last_interaction:'CEO spoken to on 4/10/26', description:'C-suite took our call', status:'active' },
+    { id:3, deal_id:'TX-403', sector:'RCM/Healthcare', region:'Houston', forensic_signal:'Stacking Debt Warning', facility_min:5.2, facility_max:7.5, financing_type:'Distressed', last_interaction:'Data pulled from public filings 4/9/26', description:'Data Driven Prospect', status:'active' },
+    { id:4, deal_id:'DE-404', sector:'EComm/Parts', region:'Delaware (Foreign)', forensic_signal:'Entity Error LMM', facility_min:2.8, facility_max:4.5, financing_type:'Mezzanine', last_interaction:'Reviewed Q4 earnings — gap confirmed', description:'Capital Need Validated', status:'active' },
   ];
 
   async function loadDeals() {
@@ -273,15 +272,15 @@
   function renderTable() {
     const region = document.getElementById('f-region').value;
     const sector = document.getElementById('f-sector').value;
-    const collateral = document.getElementById('f-collateral').value;
+    const financing = document.getElementById('f-financing').value;
     const search = document.getElementById('f-search').value.toLowerCase();
     document.getElementById('admin-col').style.display = isAdmin ? '' : 'none';
 
     let rows = allDeals.filter(x => {
       if (region !== 'All Regions' && x.region !== region) return false;
       if (sector !== 'All Sectors' && x.sector !== sector) return false;
-      if (collateral !== 'All Types' && x.collateral_type !== collateral) return false;
-      if (search && ![(x.deal_id||''),(x.sector||''),(x.region||''),(x.forensic_signal||'')].some(v => v.toLowerCase().includes(search))) return false;
+      if (financing !== 'All Financing Types' && x.financing_type !== financing) return false;
+      if (search && ![(x.deal_id||''),(x.sector||''),(x.region||''),(x.forensic_signal||''),(x.last_interaction||'')].some(v => v.toLowerCase().includes(search))) return false;
       return true;
     });
 
@@ -294,25 +293,32 @@
     });
 
     const tbody = document.getElementById('deals-tbody');
-    if (!rows.length) { tbody.innerHTML = '<tr><td colspan="10" class="empty-msg">NO SIGNALS MATCH FILTERS</td></tr>'; return; }
+    if (!rows.length) { tbody.innerHTML = '<tr><td colspan="11" class="empty-msg">NO SIGNALS MATCH FILTERS</td></tr>'; return; }
+
+    const isPremium = d => d.description === 'C-suite took our call';
 
     tbody.innerHTML = rows.map(d => {
       const funded = d.status === 'funded';
-      return `<tr class="${funded?'funded':''}">
+      const premium = isPremium(d);
+      const statusCell = funded
+        ? '<span class="funded-badge">FUNDED</span>'
+        : `<div class="status-cell">${premium ? '<span class="premium-badge">★ PREMIUM</span>' : ''}<span class="active-badge">● ACTIVE</span></div>`;
+
+      return `<tr class="${funded ? 'funded' : ''}">
         <td><span class="deal-id">${d.deal_id}</span></td>
         <td><span class="sector-badge">${d.sector}</span></td>
         <td><span class="region-cell">${d.region}</span></td>
         <td>${d.forensic_signal}</td>
         <td><span class="facility-cell">$${d.facility_min}M – $${d.facility_max}M</span></td>
-        <td>${d.collateral_type}</td>
-        <td><span class="yield-cell">${d.yield_rate}%</span></td>
-        <td>${d.description === 'CEO took our call' ? '<span class="premium-badge">★ PREMIUM</span>' : `<span class="desc-cell">${d.description||''}</span>`}</td>
-        <td>${funded?'<span class="funded-badge">FUNDED</span>':'<span class="active-badge">● ACTIVE</span>'}</td>
-        <td>${funded?'':'<button class="btn btn-green" style="font-size:10px;padding:4px 10px">VIEW CM ⟶</button>'}</td>
-        ${isAdmin?`<td style="display:flex;gap:6px;padding:9px 14px">
-          <button class="btn" style="font-size:10px;padding:4px 8px" onclick="markFunded(${d.id})">${funded?'REACTIVATE':'MARK FUNDED'}</button>
+        <td><span class="financing-cell">${d.financing_type||''}</span></td>
+        <td><span class="interaction-cell">${d.last_interaction||''}</span></td>
+        <td><span class="desc-cell">${d.description||''}</span></td>
+        <td>${statusCell}</td>
+        <td>${funded ? '' : '<button class="btn btn-green" style="font-size:10px;padding:4px 10px">VIEW CM ⟶</button>'}</td>
+        ${isAdmin ? `<td style="display:flex;gap:6px;padding:10px 14px">
+          <button class="btn" style="font-size:10px;padding:4px 8px" onclick="markFunded(${d.id})">${funded ? 'REACTIVATE' : 'MARK FUNDED'}</button>
           <button class="btn btn-red" style="font-size:10px;padding:4px 8px" onclick="deleteDeal(${d.id})">DEL</button>
-        </td>`:''}
+        </td>` : ''}
       </tr>`;
     }).join('');
   }
@@ -352,6 +358,7 @@
   function openUpload() {
     document.getElementById('upload-msg').innerHTML = '';
     document.getElementById('u-id').value = '';
+    document.getElementById('u-interaction').value = '';
     document.getElementById('modal-upload').classList.add('open');
   }
 
@@ -361,22 +368,39 @@
     const deal_id = document.getElementById('u-id').value.trim();
     const fmin = document.getElementById('u-fmin').value;
     const fmax = document.getElementById('u-fmax').value;
-    const yld = document.getElementById('u-yield').value;
-    if (!deal_id || !fmin || !fmax || !yld) {
-      document.getElementById('upload-msg').innerHTML = '<div class="msg-err">ERROR: All fields required.</div>';
+    if (!deal_id || !fmin || !fmax) {
+      document.getElementById('upload-msg').innerHTML = '<div class="msg-err">ERROR: Deal ID and facility size required.</div>';
       return;
     }
-    const deal = { deal_id, sector: document.getElementById('u-sector').value, region: document.getElementById('u-region').value, forensic_signal: document.getElementById('u-signal').value, facility_min: parseFloat(fmin), facility_max: parseFloat(fmax), collateral_type: document.getElementById('u-collateral').value, yield_rate: parseFloat(yld), description: document.getElementById('u-description').value, status: 'active' };
+    const deal = {
+      deal_id,
+      sector: document.getElementById('u-sector').value,
+      region: document.getElementById('u-region').value,
+      forensic_signal: document.getElementById('u-signal').value,
+      facility_min: parseFloat(fmin),
+      facility_max: parseFloat(fmax),
+      financing_type: document.getElementById('u-financing').value,
+      last_interaction: document.getElementById('u-interaction').value.trim(),
+      description: document.getElementById('u-description').value,
+      status: 'active'
+    };
     if (usingFallback) {
       allDeals.unshift({ ...deal, id: Date.now() });
       updateCounts(); renderTable();
-      document.getElementById('upload-msg').innerHTML = '<div class="msg-ok">SUCCESS: Deal added.</div>';
+      document.getElementById('upload-msg').innerHTML = '<div class="msg-ok">SUCCESS: Deal added to feed.</div>';
       document.getElementById('u-id').value = '';
+      document.getElementById('u-interaction').value = '';
       return;
     }
     const { error } = await sb.from('deals').insert([deal]);
-    if (error) { document.getElementById('upload-msg').innerHTML = `<div class="msg-err">ERROR: ${error.message}</div>`; }
-    else { document.getElementById('upload-msg').innerHTML = '<div class="msg-ok">SUCCESS: Deal uploaded to live feed.</div>'; document.getElementById('u-id').value = ''; await loadDeals(); }
+    if (error) {
+      document.getElementById('upload-msg').innerHTML = `<div class="msg-err">ERROR: ${error.message}</div>`;
+    } else {
+      document.getElementById('upload-msg').innerHTML = '<div class="msg-ok">SUCCESS: Deal uploaded to live feed.</div>';
+      document.getElementById('u-id').value = '';
+      document.getElementById('u-interaction').value = '';
+      await loadDeals();
+    }
   }
 
   async function markFunded(id) {
