@@ -81,6 +81,9 @@
     .fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .factions { display: flex; gap: 8px; margin-top: 18px; }
     .factions .btn { flex: 1; padding: 10px; font-size: 12px; }
+    .admin-corner { position: fixed; bottom: 18px; right: 20px; z-index: 500; }
+    .admin-corner button { font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500; padding: 4px 10px; background: transparent; border: 1px solid #2a3040; color: #3a4560; cursor: pointer; letter-spacing: 0.5px; transition: all 0.2s; border-radius: 2px; }
+    .admin-corner button:hover { border-color: var(--gold); color: var(--gold); }
     .msg-ok { background: rgba(63,185,80,0.1); border: 1px solid var(--green); color: var(--green); padding: 9px 12px; font-size: 11px; margin-bottom: 12px; }
     .msg-err { background: rgba(248,81,73,0.1); border: 1px solid var(--red); color: var(--red); padding: 9px 12px; font-size: 11px; margin-bottom: 12px; }
   </style>
@@ -96,7 +99,6 @@
     </div>
   </div>
   <div class="header-actions">
-    <button class="btn" id="btn-admin-toggle" onclick="toggleAdmin()">ADMIN LOGIN</button>
     <button class="btn btn-gold" id="btn-upload" onclick="openUpload()" style="display:none">+ UPLOAD DEAL</button>
   </div>
 </div>
@@ -143,6 +145,10 @@
       <tr><td colspan="11" class="empty-msg">LOADING LIVE FEED...</td></tr>
     </tbody>
   </table>
+</div>
+
+<div class="admin-corner">
+  <button id="btn-admin-toggle" onclick="toggleAdmin()">admin</button>
 </div>
 
 <!-- ADMIN LOGIN MODAL -->
@@ -332,7 +338,7 @@
   function toggleAdmin() {
     if (isAdmin) {
       isAdmin = false;
-      document.getElementById('btn-admin-toggle').textContent = 'ADMIN LOGIN';
+      document.getElementById('btn-admin-toggle').textContent = 'admin';
       document.getElementById('btn-upload').style.display = 'none';
       renderTable();
     } else {
@@ -346,7 +352,7 @@
   function doLogin() {
     if (document.getElementById('admin-pass').value === ADMIN_PASSWORD) {
       isAdmin = true;
-      document.getElementById('btn-admin-toggle').textContent = 'EXIT ADMIN';
+      document.getElementById('btn-admin-toggle').textContent = 'exit admin';
       document.getElementById('btn-upload').style.display = '';
       closeModal('modal-auth');
       renderTable();
