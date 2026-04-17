@@ -301,9 +301,19 @@
   async function loadDeals() {
     try {
       const { data, error } = await sb.from('deals').select('*').order('created_at', { ascending: false });
-      if (error || !data || data.length === 0) { allDeals = FALLBACK; usingFallback = true; }
-      else { allDeals = data; }
-    } catch(e) { allDeals = FALLBACK; usingFallback = true; }
+      if (error) {
+        console.error('Supabase error:', error);
+        allDeals = FALLBACK;
+        usingFallback = true;
+      } else {
+        allDeals = data || [];
+        usingFallback = false;
+      }
+    } catch(e) {
+      console.error('Load error:', e);
+      allDeals = FALLBACK;
+      usingFallback = true;
+    }
     updateCounts();
     renderTable();
   }
