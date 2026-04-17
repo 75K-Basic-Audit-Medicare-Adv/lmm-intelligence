@@ -86,6 +86,8 @@
     .admin-corner button:hover { border-color: var(--gold); color: var(--gold); }
     .msg-ok { background: rgba(63,185,80,0.1); border: 1px solid var(--green); color: var(--green); padding: 9px 12px; font-size: 11px; margin-bottom: 12px; }
     .msg-err { background: rgba(248,81,73,0.1); border: 1px solid var(--red); color: var(--red); padding: 9px 12px; font-size: 11px; margin-bottom: 12px; }
+    .premium-bar { background: rgba(227,179,65,0.12); border-bottom: 1px solid rgba(227,179,65,0.5); padding: 8px 24px; font-size: 11px; color: var(--gold); letter-spacing: 0.3px; text-align: center; }
+    .premium-bar strong { font-weight: 700; }
     .user-pill { background: var(--bg3); border: 1px solid var(--border2); padding: 5px 12px; font-size: 11px; color: var(--text2); letter-spacing: 0.3px; }
     .auth-toggle { font-size: 11px; text-align: center; margin-top: 14px; color: var(--text2); }
     .auth-toggle a { color: var(--gold); cursor: pointer; text-decoration: underline; }
@@ -111,6 +113,10 @@
 </div>
 
 <div class="syndicate-bar">⚠ <strong>JOIN THE SYNDICATE:</strong> Signed Joinder &amp; NDA required for full facility access.</div>
+
+<div class="premium-bar">
+  ★ <strong>5 PREMIUM SYNDICATE SEATS AVAILABLE</strong> &nbsp;|&nbsp; Exclusive deal flow, priority access &amp; direct analyst briefings &nbsp;|&nbsp; Call our Wall Street office: <strong>212-202-9129</strong>
+</div>
 
 <div class="filter-bar">
   <span class="filter-label">FILTER:</span>
@@ -353,7 +359,7 @@
         <td><span class="desc-cell">${d.description||''}</span></td>
         <td>${statusCell}</td>
         <td>${funded ? '' : currentUser
-          ? '<button class="btn btn-gold" style="font-size:10px;padding:4px 10px">GET FULL REPORT — $1,000</button>'
+          ? `<a href="https://buy.stripe.com/test_00wdR8anf1sF6A9c6J4AU00" target="_blank" style="text-decoration:none"><button class="btn btn-gold" style="font-size:10px;padding:4px 10px">GET FULL REPORT — $1</button></a>`
           : '<span class="lock-msg">🔒 SIGN IN TO ACCESS</span>'
         }</td>
         ${isAdmin ? `<td style="display:flex;gap:6px;padding:10px 14px">
